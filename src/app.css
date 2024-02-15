@@ -1,0 +1,16 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.graph {
+  width: 300px;
+  height: 100px;
+  outline: 1px solid;
+}
+.graph polyline {
+  fill: none;
+  stroke: black;
+  stroke-width: 2;
+}
