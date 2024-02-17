@@ -2,7 +2,7 @@
 
   import Graph from './lib/Graph.svelte'
   import Form from './lib/Form.svelte'
-  import {calculateLoans} from './lib/calc.js'
+  import {calculateLoan} from './lib/calc.js'
   import {loanToGraphs} from './lib/graph.js'
   import {ANNUITY, EQUAL} from './lib/config.js'
 
@@ -14,17 +14,42 @@
       interest_rate_percentage: 5,
       margin_percentage: 1,
       monthly_expense_sum: 5,
-      extra_payment_sum: 0,
     }
   }
-  let opts = presets['asuntolaina']
 
-  let loans = calculateLoans(opts)
-  $: loans = calculateLoans(opts)
+  //Loan parameters, get initial params from preset
+  let loan_params = presets['asuntolaina']
+
+  let extra_payment_sum = 0
+  let interest_rate_uncertainty_percentage = 1 //TODO: get low & high loans based on interest rate percentage number +/- this
+  //TODO: make area graphs that high/low uncertainty range
+
+  let fullLoan = calculateLoan(loan_params)
+  $: fullLoan = calculateLoan(loan_params)
+
+  let reducedLoan = calculateLoan({
+    ...loan_params,
+    loan_sum: loan_params.loan_sum - extra_payment_sum
+  })
+  $: reducedLoan = calculateLoan({
+    ...loan_params,
+    loan_sum: loan_params.loan_sum - extra_payment_sum
+  })
+  //TODO: get ranges for full & reduced loan based on interest_rate_uncertainty, so one loan for interest percentage minus uncertainty and one loan for interest rate plus uncertainty, then use those to draw uncertainty ranges on the graphs.
 
   //TODO: Do math on points etc
-  let graphs = loanToGraphs(loans.reduced)
-  $: graphs = loanToGraphs(loans.reduced)
+  const graphPreset = {
+    min: {
+      x: 0,
+      y: 0
+    },
+    max: {
+      x: 100,
+      y: 100,
+    }
+  }
+  let graphs = loanToGraphs(reducedLoan)
+  $: graphs = loanToGraphs(reducedLoan)
   console.log(graphs)
 
 </script>
@@ -42,7 +67,12 @@
       <h2>Remaining loan</h2>
       <Graph {...graphs.remaining_loan} />
     </div>
-    <Form bind:opts {loans} />
-    <pre>{JSON.stringify(loans, null, '  ')}</pre>
+    <Form
+      bind:loan_params
+      bind:extra_payment_sum
+      bind:interest_rate_uncertainty_percentage
+      {fullLoan}
+      {reducedLoan}
+    />
   </div>
 </main>

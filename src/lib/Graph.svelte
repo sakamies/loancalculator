@@ -1,4 +1,6 @@
 <script>
+  import {pointsToString} from "./graph.js"
+
   export let id = ""
   let classes = "graph"
   export {classes as class}
@@ -25,6 +27,6 @@
 <svg class={classes} {viewBox} preserveaspectratio="none">
   <title>{title}</title>
   <g transform="translate(0,{yrange}) scale(1,-1)">
-    <polyline {points} vector-effect="non-scaling-stroke"/>
+    <polyline points={pointsToString(points)} vector-effect="non-scaling-stroke" />
   </g>
 </svg>

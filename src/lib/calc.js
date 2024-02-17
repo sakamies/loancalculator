@@ -1,6 +1,6 @@
 import {ANNUITY, EQUAL} from '/src/lib/config.js'
 
-export function calculateLoans (opts) {
+export function calculateLoan (opts) {
   const {
     loan_type,
     loan_sum,
@@ -8,7 +8,6 @@ export function calculateLoans (opts) {
     interest_rate_percentage,
     margin_percentage,
     monthly_expense_sum,
-    extra_payment_sum,
   } = opts
 
   const total_interest_factor_per_year = (interest_rate_percentage + margin_percentage) / 100
@@ -21,21 +20,8 @@ export function calculateLoans (opts) {
     loan_period_months
   }
 
-  /*
-    TODO:
-    - Make both types of loan calculation into functions
-    - Calculate both normal payments for loan and the loan with extra payment subtracted from the loan_sum
-
-    With those two calculations I can compare what happens when you do an extra payment on your loan.
-  */
   if (loan_type === ANNUITY) {
-    const full = calculateAnnuityLoan(opts, data)
-
-    const opts2 = {...opts}
-    opts2.loan_sum = opts2.loan_sum - extra_payment_sum
-    const reduced = calculateAnnuityLoan(opts2, data)
-
-    return {full, reduced}
+    return calculateAnnuityLoan(opts, data)
   }
 
   if (loan_type === EQUAL) {
@@ -54,7 +40,6 @@ function calculateAnnuityLoan (opts, data) {
     interest_rate_percentage,
     margin_percentage,
     monthly_expense_sum,
-    extra_payment_sum,
   } = opts
 
   const {
@@ -90,19 +75,19 @@ function calculateAnnuityLoan (opts, data) {
 
     principal.push({
       month: i,
-      value: Math.max(installment_principal_payment_sum, 0)
+      value: Math.max(Math.round(installment_principal_payment_sum), 0)
     })
     interest.push({
       month: i,
-      value: Math.max(installment_interest_sum, 0)
+      value: Math.max(Math.round(installment_interest_sum), 0)
     })
     expense.push({
       month: i,
-      value: Math.max(monthly_expense_sum, 0)
+      value: Math.max(Math.round(monthly_expense_sum), 0)
     })
     remaining_loan.push({
       month: i,
-      value: Math.max(remaining_loan_sum, 0)
+      value: Math.max(Math.round(remaining_loan_sum), 0)
     })
   }
 
