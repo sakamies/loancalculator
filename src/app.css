@@ -4,13 +4,19 @@
   box-sizing: border-box;
 }
 
-.graph {
+body {
+  background: #eee;
+}
+
+.graphs {
+  display: grid;
+  grid-template: "a";
+  background-color: white;
   width: 300px;
   height: 100px;
-  outline: 1px solid;
+  place-content: stretch;
+  place-items: stretch;
 }
-.graph polyline {
-  fill: none;
-  stroke: black;
-  stroke-width: 2;
+.graphs > .graph {
+  grid-area: a;
 }

@@ -92,6 +92,7 @@ function calculateAnnuityLoan (opts, data) {
   }
 
   data = {
+    ...opts,
     ...data,
     total_paid_sum, //How much money overall you paid
     total_interest_sum, //How much interest you paid in total

@@ -3,7 +3,11 @@
   import Graph from './lib/Graph.svelte'
   import Form from './lib/Form.svelte'
   import {calculateLoan} from './lib/calc.js'
-  import {loanToGraphs} from './lib/graph.js'
+  import {
+    loanToMonthlyGraphs,
+    loanToGraph,
+    seriesMax
+  } from './lib/graph.js'
   import {ANNUITY, EQUAL} from './lib/config.js'
 
   const presets = {
@@ -24,33 +28,37 @@
   let interest_rate_uncertainty_percentage = 1 //TODO: get low & high loans based on interest rate percentage number +/- this
   //TODO: make area graphs that high/low uncertainty range
 
-  let fullLoan = calculateLoan(loan_params)
   $: fullLoan = calculateLoan(loan_params)
-
-  let reducedLoan = calculateLoan({
-    ...loan_params,
-    loan_sum: loan_params.loan_sum - extra_payment_sum
-  })
   $: reducedLoan = calculateLoan({
     ...loan_params,
     loan_sum: loan_params.loan_sum - extra_payment_sum
   })
+  $: console.log(fullLoan.total_paid_sum, reducedLoan.total_paid_sum)
   //TODO: get ranges for full & reduced loan based on interest_rate_uncertainty, so one loan for interest percentage minus uncertainty and one loan for interest rate plus uncertainty, then use those to draw uncertainty ranges on the graphs.
 
-  //TODO: Do math on points etc
-  const graphPreset = {
-    min: {
-      x: 0,
-      y: 0
+  $: monthlyBox = {
+    min: {x: 0, y: 0
     },
     max: {
-      x: 100,
-      y: 100,
+      x: fullLoan.loan_period_months,
+      y: Math.max(
+        seriesMax('value', fullLoan.principal),
+        seriesMax('value', fullLoan.interest)
+      )
+    }
+  };
+  $: monthlyGraphs = loanToMonthlyGraphs(fullLoan, monthlyBox)
+
+  $: loanBox = {
+    min: {x: 0, y: 0
+    },
+    max: {
+      x: fullLoan.loan_period_months,
+      y: fullLoan.loan_sum
     }
   }
-  let graphs = loanToGraphs(reducedLoan)
-  $: graphs = loanToGraphs(reducedLoan)
-  console.log(graphs)
+  $: fullLoanGraph = loanToGraph(fullLoan, loanBox)
+  $: reducedLoanGraph = loanToGraph(reducedLoan, loanBox)
 
 </script>
 
@@ -58,14 +66,17 @@
   <h1>Lainalaskuri</h1>
   <div style="display: flex; gap: 1em;">
     <div>
-      <h2>Principal</h2>
-      <Graph {...graphs.principal} />
-      <h2>Interest</h2>
-      <Graph {...graphs.interest} />
-      <h2>Expense</h2>
-      <Graph {...graphs.expense} />
-      <h2>Remaining loan</h2>
-      <Graph {...graphs.remaining_loan} />
+      <h2>Kuukausierät</h2>
+      <div class="graphs">
+        <Graph c="green" title="Pääomanerän suuruus" {...monthlyGraphs.principal} />
+        <Graph c="orange" title="Korkoerän suuruus" {...monthlyGraphs.interest} />
+        <Graph c="red" title="Kiinteä kulu" {...monthlyGraphs.expense} />
+      </div>
+      <h2>Lainaa jäljellä</h2>
+      <div class="graphs">
+        <Graph {...fullLoanGraph} />
+        <Graph {...reducedLoanGraph} />
+      </div>
     </div>
     <Form
       bind:loan_params
@@ -76,3 +87,7 @@
     />
   </div>
 </main>
+
+<style>
+
+</style>
